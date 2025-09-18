@@ -1,0 +1,33 @@
+@startuml
+actor Customer
+participant Web_UI
+participant Order_Controller
+participant Payment_Service
+participant Database
+participant Notification_Service
+activate Customer
+Customer -> Web_UI: intiateOrder(orderDetails)
+activate Web_UI
+Web_UI -> Order_Controller: processOrder(orderDetails)
+activate Order_Controller
+Order_Controller -> Database: saveOrder(orderDetails)
+activate Database
+Database -[#green]-> Order_Controller: orderSaved
+deactivate Database
+group Оплата
+Order_Controller -> Payment_Service: processPayment(paymentInfo)
+activate Payment_Service
+alt Успешная оплата
+Payment_Service -[#green]-> Order_Controller: paymentSuccess(paymentConfirmation)
+Order_Controller -[#blue]>> Notification_Service: sendOrderNotification(orderInfo)
+else Ошибка при оплате
+Payment_Service -[#red]-> Order_Controller: paymentFailure(errorMessage)
+deactivate Payment_Service
+Order_Controller -[#blue]>> Notification_Service: sendOrderNotification(errorInfo)
+end
+end
+Order_Controller --> Web_UI: orderConfirmation(confirmationDetails)
+deactivate Order_Controller
+Web_UI --> Customer: UIConfirmation(confirmationDetails)
+deactivate Web_UI
+@enduml
