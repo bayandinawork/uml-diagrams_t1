@@ -1,0 +1,49 @@
+@startuml
+
+title Система оплаты в офлайн-магазине
+
+abstract class Payment {
+  - amount: float
+  - paymentDate: DateTime
+  - transactionId: string
+  --
+  + get_amount(): float
+  + get_paymentDate(): DateTime
+  + get_transactionId(): string
+  --
+  {abstract} + processPayment(): void
+}
+
+class CashPayment {
+  - cashProvided: float
+  --
+  + get_cashProvided(): float
+  + calculateChange(): float
+  + processPayment(): void
+}
+
+class CardPayment {
+  - cardNumber: string
+  - cardHolder: string
+  - expiryDate: string
+  --
+  + get_cardNumber(): string
+  + get_cardHolder(): string
+  + get_expiryDate(): string
+  + validateCard(): bool
+  + processPayment(): void
+}
+
+Payment <|-- CashPayment
+Payment <|-- CardPayment
+
+class PaymentManager {
+  - payments: List<Payment>
+  --
+  + addPayment(payment: Payment): void
+  + processAllPayments(): void
+}
+
+PaymentManager o-- Payment
+
+@enduml
