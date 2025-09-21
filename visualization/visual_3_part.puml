@@ -1,1 +1,66 @@
+@startuml
+actor Customer
+participant Web_UI
+participant Backend_API
+participant Payment_Service
+participant Database
+participant Notification_Service
+activate Customer
 
+Customer -> Web_UI: intiateOrder
+activate Web_UI
+Web_UI -> Backend_API: getCartDetails
+activate Backend_API
+Backend_API -> Database: getCartDetailss
+activate Database
+Database -[#green]-> Backend_API: productData
+deactivate Database
+Backend_API -[#green]-> Web_UI: CartDetails
+Web_UI --> Customer: formOrder
+opt Применение промокода
+Customer -> Web_UI: enteringPromocode (promocode)
+Web_UI -> Backend_API: chekPromocode (promocode,cartDetailss)
+Backend_API -> Database: chekPromocode (promocode,cartDetailss)
+activate Database
+Database --> Backend_API: promoInformation
+deactivate Database
+Backend_API --> Web_UI: resultUsingPromo
+Web_UI --> Customer: updatedOrderAmount
+note left: Пользователю отображается\nобновленная сумма заказа
+end
+group Оплата
+Backend_API -> Payment_Service: processPayment(paymentInfo)
+activate Payment_Service
+alt Успешная оплата
+Payment_Service -[#green]-> Backend_API: paymentSuccess(paymentConfirmation)
+Backend_API -[#blue]>> Notification_Service: sendOrderNotification(orderInfo)
+else Ошибка при оплате
+Payment_Service -[#red]-> Backend_API: paymentFailure(errorMessage)
+note over Payment_Service: Заказ сохраняется как предварительный
+deactivate Payment_Service
+Backend_API -[#blue]>> Notification_Service: sendOrderNotification(errorInfo)
+end
+end
+Backend_API --> Web_UI: orderConfirmation(confirmationDetails)
+deactivate Backend_API
+Web_UI --> Customer: UIConfirmation(confirmationDetails)
+deactivate Web_UI
+opt Отмена заказа
+Customer -> Web_UI: сancelOrder
+activate Web_UI
+Web_UI -> Backend_API: сancelOrder(orderInfo)
+activate Backend_API
+Backend_API --> Database: updateStatus
+activate Database
+Backend_API --> Database: unlockBalances
+deactivate Database
+Backend_API --> Web_UI: cancellationСonfirmation
+deactivate Backend_API
+Web_UI --> Customer: UICancellationConfirmation
+deactivate Web_UI
+end
+group Уведомление пользователя о поступлении заказа в пунк выдачи
+Notification_Service -[#green]>> Customer: customerNotification (orderInfo)
+note left: Пользователь получает \n уведомление о заказе\n и сроках хранения
+end
+@enduml
