@@ -1,0 +1,239 @@
+@startuml
+' Диаграмма классов для платформы репетиторов
+'1. Классы и их атрибуты
+class User {
+  -userId: String
+  -email: String
+  -password: String
+  -phone: String
+  -registrationDate: Date
+  +login()
+  +logout()
+  +updateProfile()
+}
+
+class Teacher {
+  -teacherId: String
+  -specialization: String
+  -hourlyRate: Double
+  -experience: Integer
+  -rating: Double
+  -bio: String
+  +createLesson()
+  +gradeHomework()
+  +uploadMaterials()
+}
+
+class Student {
+  -studentId: String
+  -gradeLevel: String
+  -parentInfo: String
+  -learningGoals: String
+  +bookLesson()
+  +submitHomework()
+  +viewMaterials()
+  +makePayment()
+}
+
+class Admin {
+  -adminId: String
+  -permissions: String
+  +manageUsers()
+  +generateReports()
+  +systemConfig()
+}
+
+class Profile {
+  -profileId: String
+  -firstName: String
+  -lastName: String
+  -avatar: String
+  -bio: String
+  -preferences: String
+  +updateInfo()
+  +uploadAvatar()
+}
+
+class Lesson {
+  -lessonId: String
+  -title: String
+  -description: String
+  -schedule: DateTime
+  -duration: Integer
+  -status: String
+  -recordingUrl: String
+  +startLesson()
+  +recordLesson()
+  +cancelLesson()
+}
+
+class Whiteboard {
+  -whiteboardId: String
+  -sessionId: String
+  -tools: String
+  -content: String
+  -timestamp: DateTime
+  +draw()
+  +erase()
+  +saveSession()
+}
+
+class Homework {
+  -homeworkId: String
+  -title: String
+  -description: String
+  -dueDate: DateTime
+  -maxPoints: Integer
+  -status: String
+  +submitWork()
+  +gradeHomework()
+  +provideFeedback()
+}
+
+class Course {
+  -libraryId: String
+  -name: String
+  -description: String
+  -category: String
+  +searchNotes()
+  +organizeByCategory()
+}
+
+class Module {
+  -moduleId: String
+  -title: String
+  -content: String
+  -topic: String
+  -createdDate: DateTime
+  -tags: String[]
+  +createModule()
+  +editModule()
+  +shareModule()
+}
+
+class VideoLibrary {
+  -libraryId: String
+  -totalVideos: Integer
+  -storageUsed: Long
+  +organizeVideos()
+  +searchVideos()
+}
+
+class VideoLesson {
+  -videoId: String
+  -title: String
+  -description: String
+  -duration: Integer
+  -uploadDate: DateTime
+  -views: Integer
+  +playVideo()
+  +downloadVideo()
+  +shareVideo()
+}
+
+class Calendar {
+  -calendarId: String
+  -name: String
+  -ownerId: String
+  -isPublic: Boolean
+  -shareSettings: String
+  +addEvent()
+  +removeEvent()
+  +syncCalendar()
+  +shareWithUser()
+}
+
+class CalendarAccess {
+  -accessId: String
+  -calendarId: String
+  -userId: String
+  -permissionLevel: String
+  -grantedDate: DateTime
+  +grantAccess()
+  +revokeAccess()
+}
+
+class PaymentService {
+  -serviceId: String
+  -provider: String
+  -apiKey: String
+  +processPayment()
+  +refundPayment()
+  +generateInvoice()
+}
+
+class Payment {
+  -paymentId: String
+  -amount: Double
+  -currency: String
+  -status: String
+  -paymentDate: DateTime
+  +verifyPayment()
+  +sendReceipt()
+}
+
+' 2. Наследование
+User <|-- Teacher: наследование (учитель — подтип пользователя)
+
+User <|-- Student: наследование (ученик — подтип пользователя)
+
+User <|-- Admin: наследование (администратор — подтип пользователя)
+
+' 3. Ассоциации и множественность
+Teacher "1" -- "0..*" Lesson: проводит уроки (ассоциация, 0..*)
+
+Student "1" -- "0..*" Lesson: посещает уроки (ассоциация, 0..*)
+
+Lesson "1" -- "1" Whiteboard: использует доску для занятий (ассоциация, 1)
+
+Teacher "1" -- "0..*" Homework:задает домашние задания (ассоциация, 0..*)
+
+Student "1" -- "0..*" Homework: получает и выполняет домашние задания (ассоциация, 0..*)
+
+User "1" -- "1" Profile: имеет профиль (ассоциация, 1)
+
+User "1" -- "1" Calendar: использует календарь (ассоциация, 1)
+
+Calendar "1" -- "0..*" CalendarAccess: предоставляет доступ (ассоциация, 0..*)
+
+CalendarAccess "1" -- "1" User: имеет доступ к календарю (ассоциация, 1)
+
+Lesson "1" -- "0..*" Homework: сожержит ДЗ (ассоциация, 0..*)
+
+Teacher "1" -- "0..*" Course: создает курсы (ассоциация, 0..*)
+
+Student "1" -- "0..1" VideoLibrary: имеет доступ к видеоархиву (ассоциация, 0..1)
+
+Student "1" -- "0..1" Course: изучает курсы (ассоциация, 0..*)
+
+' 4. Композиция и агрегация
+Course "1" *-- "0..*" Module: Курсы содержат модули (композиция, 0..*)
+
+VideoLibrary "1" *-- "0..*" VideoLesson: видеотека содержит записи уроков (композиция, 0..*)
+
+Lesson "1" o-- "0..1" VideoLesson: урок может быть записан как видео (агрегация, 0..1)
+
+Calendar "1" o-- "0..*" Lesson: календарь содержит уроки как события (агрегация, 0..*)
+
+
+' 5. Ассоциативные классы
+class LessonBooking {
+  -bookingId: String
+  -bookingDate: DateTime
+  -status: String
+  -notes: String
+  -paymentStatus:String
+}
+
+LessonBooking . Teacher
+LessonBooking . Student
+LessonBooking . Lesson
+' Комментарий: ассоциативный класс (бронирование уроков)
+
+' 6. Зависимости
+
+PaymentService ..> Payment:сервис создает платежи (зависимость)
+
+User ..> Payment: пользователь совершает платежи (зависимость)
+
+@enduml
